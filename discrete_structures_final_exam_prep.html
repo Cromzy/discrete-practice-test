@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discrete Structures Final Exam Study App</title>
+<style>
+  :root {
+    --primary: #1a237e;
+    --primary-2: #283593;
+    --accent: #0d47a1;
+    --ink: #17172f;
+    --muted: #4b5563;
+    --bg: #f2f4f8;
+    --card: #fff;
+    --line: #c7d2fe;
+    --gold: #f4b400;
+    --green: #1b5e20;
+    --red: #b71c1c;
+    --green-bg: #e8f5e9;
+    --red-bg: #ffebee;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--ink); }
+  header { position: sticky; top: 0; z-index: 20; background: var(--primary); color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.25); }
+  .topbar { height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 18px; }
+  h1 { font-size: 1.05rem; margin: 0; letter-spacing: .2px; }
+  .exam-chip { font-size: .75rem; opacity: .9; white-space: nowrap; }
+  nav { display: flex; overflow-x: auto; background: var(--primary-2); }
+  nav button { border: 0; background: transparent; color: #fff; padding: 12px 16px; font-weight: 650; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+  nav button.active { color: #fff59d; border-bottom-color: var(--gold); background: rgba(255,255,255,.12); }
+  main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 64px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .section-title { color: var(--primary); font-size: 1.42rem; font-weight: 800; margin: 6px 0 4px; }
+  .section-sub { color: var(--muted); margin: 0 0 18px; line-height: 1.45; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 14px; }
+  .card, .dash-card, .learn-card, .question-card, .score-card { background: var(--card); border-radius: 8px; box-shadow: 0 2px 8px rgba(18,24,40,.08); }
+  .dash-card { padding: 18px; border-left: 4px solid var(--accent); cursor: pointer; }
+  .dash-card h3 { margin: 0 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-size: .78rem; }
+  .dash-card p { margin: 0; color: var(--primary); font-size: 1.55rem; font-weight: 800; }
+  .dash-card small { color: var(--muted); }
+  .banner { background: #fff8e1; border: 1px solid #f6c343; border-radius: 8px; padding: 12px 14px; color: #5d4200; line-height: 1.45; margin: 16px 0; }
+  .coverage { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(18,24,40,.08); }
+  .coverage th { background: var(--primary); color: #fff; text-align: left; padding: 10px; font-size: .82rem; }
+  .coverage td { border-top: 1px solid #e5e7eb; padding: 10px; vertical-align: top; font-size: .86rem; line-height: 1.45; }
+  .chapter-nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 12px; }
+  .ch-btn { text-align: left; padding: 13px; background: #fff; border: 2px solid var(--line); border-radius: 8px; cursor: pointer; }
+  .ch-btn strong { color: var(--accent); display: block; font-size: .72rem; text-transform: uppercase; }
+  .ch-btn span { display: block; margin-top: 3px; font-weight: 750; }
+  .selector, .test-controls, .cheat-controls { display: flex; flex-wrap: wrap; gap: 9px; margin: 0 0 16px; align-items: center; }
+  .selector button, .test-controls button, .test-controls select, .cheat-controls button { border-radius: 7px; border: 2px solid var(--line); background: #fff; padding: 9px 13px; font-weight: 700; cursor: pointer; }
+  .selector button.active, .test-controls button.primary, .cheat-controls button { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .learn-card { overflow: hidden; margin-bottom: 14px; }
+  .learn-head { padding: 13px 16px; color: #fff; font-weight: 800; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; }
+  .learn-body { display: none; padding: 16px; }
+  .learn-body.open { display: block; }
+  .concept { border-bottom: 1px solid #e5e7eb; padding-bottom: 13px; margin-bottom: 13px; }
+  .concept:last-child { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+  .concept h4 { margin: 0 0 6px; color: var(--accent); font-size: .88rem; text-transform: uppercase; letter-spacing: .3px; }
+  .concept p, .concept li { color: var(--muted); line-height: 1.55; font-size: .9rem; }
+  .concept ul { margin: 6px 0 0; padding-left: 20px; }
+  .formula { background: #eef2ff; border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 9px 11px; margin: 7px 0; font-family: Consolas, "Courier New", monospace; color: var(--primary); font-size: .88rem; }
+  .mini-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: .84rem; }
+  .mini-table th { background: var(--primary); color: #fff; padding: 6px; }
+  .mini-table td { border: 1px solid #dbe2f0; padding: 5px 7px; text-align: center; }
+  .progress-label { color: var(--muted); font-size: .84rem; margin-bottom: 7px; }
+  .progress-outer { height: 8px; background: #d8def3; border-radius: 999px; margin-bottom: 15px; }
+  .progress-inner { height: 8px; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 999px; transition: width .25s; }
+  .question-card { padding: 20px; }
+  .q-meta { color: var(--accent); text-transform: uppercase; font-weight: 800; letter-spacing: .4px; font-size: .72rem; margin-bottom: 8px; }
+  .q-text { font-weight: 700; line-height: 1.5; margin-bottom: 13px; }
+  .options { display: grid; gap: 8px; }
+  .option-btn { text-align: left; border: 2px solid var(--line); border-radius: 8px; background: #fff; padding: 11px 13px; cursor: pointer; font-size: .88rem; }
+  .option-btn.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); font-weight: 750; }
+  .option-btn.wrong { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+  .answer-box { width: 100%; min-height: 78px; border: 2px solid var(--line); border-radius: 8px; padding: 10px; font: inherit; resize: vertical; }
+  .feedback { margin-top: 12px; padding: 12px 14px; border-radius: 7px; line-height: 1.5; font-size: .88rem; }
+  .feedback.good { background: var(--green-bg); color: var(--green); border-left: 4px solid var(--green); }
+  .feedback.bad { background: var(--red-bg); color: var(--red); border-left: 4px solid var(--red); }
+  .q-nav { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 13px; }
+  .q-nav button, .score-card button { border: 2px solid var(--accent); color: var(--accent); background: #fff; border-radius: 7px; padding: 9px 14px; font-weight: 750; cursor: pointer; }
+  .q-nav button.primary, .score-card button.primary { background: var(--accent); color: #fff; }
+  .score-card { padding: 28px; text-align: center; }
+  .score-big { color: var(--primary); font-size: 3.6rem; font-weight: 850; }
+  .mode-note { font-size: .84rem; color: var(--muted); margin-top: 8px; }
+  #cheat-sheet { background: #fff; border: 1px solid #999; border-radius: 8px; padding: 10px; overflow: auto; }
+  .cs-page { width: 100%; min-height: 1160px; padding: 6px; break-after: page; page-break-after: always; }
+  .cs-title { text-align: center; font-size: 6.55pt; font-weight: 800; color: #1a237e; border-bottom: .8pt solid #1a237e; padding-bottom: 1px; margin-bottom: 2px; }
+  .cs-flow { column-count: 3; column-gap: 5px; column-rule: .4pt solid #d6dcf4; }
+  .cs-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; align-items: start; }
+  .cs-block { margin: 0 0 2.4px; break-inside: avoid; page-break-inside: avoid; }
+  .cs-block h3 { margin: 0 0 .8px; padding: .7px 1.8px; color: #fff; background: #1a237e; font-size: 6.45pt; text-transform: uppercase; }
+  .cs-block h4 { margin: 1.4px 0 .4px; color: #0d47a1; font-size: 5.75pt; border-bottom: .35pt solid #c7d2fe; }
+  .cs-block p, .cs-block li { margin: 0; color: #111; font-size: 5.72pt; line-height: 1.07; }
+  .cs-block ul { margin: 0; padding-left: 8px; }
+  .cs-formula { display: inline-block; background: #eef2ff; border-radius: 1px; padding: 0 1.2px; margin: .2px 0; font-family: Consolas, "Courier New", monospace; font-size: 5.28pt; }
+  .cs-table { width: 100%; border-collapse: collapse; font-size: 5.05pt; margin: .8px 0; }
+  .cs-table th { background: #1a237e; color: #fff; }
+  .cs-table td, .cs-table th { border: .35pt solid #aaa; padding: .35px .8px; text-align: center; }
+  .cs-note { background: #fff8e1; border-left: 1.5px solid #f4b400; padding: .7px 1.5px; margin-top: .7px; }
+  @media print {
+    @page { size: A4 portrait; margin: 5mm; }
+    body * { visibility: hidden; }
+    #cheat-sheet, #cheat-sheet * { visibility: visible; }
+    #cheat-sheet { position: absolute; inset: 0; border: 0; padding: 0; overflow: visible; }
+    .cs-page { height: 287mm; min-height: 0; padding: 0; overflow: hidden; }
+    .cs-flow { height: 279mm; column-fill: balance; }
+    header, nav, .cheat-controls { display: none; }
+  }
+  @media (max-width: 680px) {
+    .topbar { align-items: flex-start; height: auto; padding: 12px 14px; flex-direction: column; }
+    .cs-cols { grid-template-columns: 1fr; }
+    .cs-flow { column-count: 1; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <h1>Discrete Structures Final Exam Prep</h1>
+    <div class="exam-chip">75 minutes | MCS 111 | A4 double-sided cheat sheet | calculator allowed</div>
+  </div>
+  <nav>
+    <button class="active" onclick="showPage('dashboard')">Home</button>
+    <button onclick="showPage('learn')">Learn</button>
+    <button onclick="showPage('practice')">Practice Test</button>
+    <button onclick="showPage('cheatsheet')">Two-Page Cheat Sheet</button>
+  </nav>
+</header>
+
+<main>
+  <section id="dashboard" class="page active">
+    <div class="section-title">Final Exam Study Dashboard</div>
+    <p class="section-sub">Built to cover the Final Review PDF topics using the chapter slide set in this folder. Use it as a 3-4 hour cram station: review, drill, then take the mixed-format final simulation.</p>
+    <div class="grid">
+      <div class="dash-card" onclick="showPage('learn')"><h3>Review Units</h3><p>6</p><small>Logic through counting</small></div>
+      <div class="dash-card" onclick="showPage('practice')"><h3>Question Bank</h3><p id="q-count">--</p><small>Multiple choice, numeric, short answer, proof setup</small></div>
+      <div class="dash-card" onclick="showPage('cheatsheet')"><h3>Cheat Sheet</h3><p>2 pages</p><small>A4 double-sided and denser than before</small></div>
+      <div class="dash-card"><h3>Target</h3><p>80%+</p><small>Focus on method, not memorized answers</small></div>
+    </div>
+    <div class="banner"><strong>Study path:</strong> 35 min Ch 1, 25 min Ch 2, 35 min Ch 3, 35 min Ch 4, 25 min Ch 5, 25 min Ch 6, then 75 min mixed final simulation and 20 min reviewing misses.</div>
+    <table class="coverage">
+      <tr><th>Final Review / Slides Topic</th><th>Covered In App</th><th>What To Be Able To Do</th></tr>
+      <tr><td>Ch 1 Foundations: propositions, equivalence, quantifiers, inference</td><td>Learn Ch 1, cheat sheet page 1, mixed questions</td><td>Build truth tables, negate quantified statements, identify valid arguments, choose proof method.</td></tr>
+      <tr><td>Ch 2 Structures: sets, functions, sequences, summations</td><td>Learn Ch 2, cheat sheet page 1, calculations</td><td>Use set laws, classify functions, compose functions, evaluate common sums.</td></tr>
+      <tr><td>Ch 3 Algorithms: intro, growth, complexity</td><td>Learn Ch 3, cheat sheet page 1, Big-O proofs</td><td>Find witnesses for Big-O, rank functions, analyze loops/search/sort.</td></tr>
+      <tr><td>Ch 4 Number Theory: integer representations, congruences</td><td>Learn Ch 4, cheat sheet page 2, numeric drills</td><td>Convert bases, compute mod with negatives, run Euclidean algorithm, find inverses when possible.</td></tr>
+      <tr><td>Ch 5 Induction and recursion</td><td>Learn Ch 5, cheat sheet page 2, proof setup prompts</td><td>State basis, hypothesis, inductive objective; check recursive definitions and algorithms.</td></tr>
+      <tr><td>Ch 6 Basic counting</td><td>Learn Ch 6, cheat sheet page 2, word problems</td><td>Choose product/sum/subtraction/division, permutations, combinations, bit-string counts.</td></tr>
+    </table>
+    <div class="section-title" style="font-size:1.08rem;margin-top:20px">Jump To Chapter</div>
+    <div class="chapter-nav">
+      <button class="ch-btn" onclick="showLearnChapter(0)"><strong>Chapter 1</strong><span>Logic and Proofs</span></button>
+      <button class="ch-btn" onclick="showLearnChapter(1)"><strong>Chapter 2</strong><span>Basic Structures</span></button>
+      <button class="ch-btn" onclick="showLearnChapter(2)"><strong>Chapter 3</strong><span>Algorithms</span></button>
+      <button class="ch-btn" onclick="showLearnChapter(3)"><strong>Chapter 4</strong><span>Number Theory</span></button>
+      <button class="ch-btn" onclick="showLearnChapter(4)"><strong>Chapter 5</strong><span>Induction and Recursion</span></button>
+      <button class="ch-btn" onclick="showLearnChapter(5)"><strong>Chapter 6</strong><span>Basic Counting</span></button>
+    </div>
+  </section>
+
+  <section id="learn" class="page">
+    <div class="section-title">Learning Material</div>
+    <p class="section-sub">Expanded from the review outline and the slide topics. Open each card, then test yourself immediately after that chapter.</p>
+    <div class="selector" id="chapter-selector"></div>
+    <div id="learn-content"></div>
+  </section>
+
+  <section id="practice" class="page">
+    <div class="section-title">Practice Test</div>
+    <p class="section-sub">Not just multiple choice now. Some questions ask for a number, expression, short explanation, or induction framework. Free-response items reveal a rubric so you can self-grade honestly.</p>
+    <div id="test-setup">
+      <div class="test-controls">
+        <select id="chapter-filter">
+          <option value="all">All chapters</option>
+          <option value="0">Chapter 1: Logic</option>
+          <option value="1">Chapter 2: Structures</option>
+          <option value="2">Chapter 3: Algorithms</option>
+          <option value="3">Chapter 4: Number Theory</option>
+          <option value="4">Chapter 5: Induction and Recursion</option>
+          <option value="5">Chapter 6: Counting</option>
+        </select>
+        <select id="test-size">
+          <option value="20">20-question warmup</option>
+          <option value="30">30-question drill</option>
+          <option value="all">Full mixed final</option>
+        </select>
+        <button class="primary" onclick="startTest()">Start</button>
+      </div>
+      <div class="banner">For the full final simulation, set a 75-minute timer. Mark free-response correct only if your work matches the rubric, not just the final answer.</div>
+    </div>
+    <div id="test-area" style="display:none"></div>
+  </section>
+
+  <section id="cheatsheet" class="page">
+    <div class="section-title">Two-Page Cheat Sheet</div>
+    <p class="section-sub">Dense A4 double-sided version. Page 1 covers logic, structures, algorithms; page 2 covers number theory, induction/recursion, counting.</p>
+    <div class="cheat-controls"><button onclick="window.print()">Print Cheat Sheet</button></div>
+    <div id="cheat-sheet"></div>
+  </section>
+</main>
+
+<script>
+const chNames = ["Ch 1: Logic", "Ch 2: Structures", "Ch 3: Algorithms", "Ch 4: Number Theory", "Ch 5: Induction", "Ch 6: Counting"];
+
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  const i = ["dashboard","learn","practice","cheatsheet"].indexOf(id);
+  document.querySelectorAll("nav button")[i].classList.add("active");
+  window.scrollTo(0,0);
+}
+function showLearnChapter(i) { showPage("learn"); setTimeout(() => setLearnChapter(i), 30); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+function norm(s) { return String(s).toLowerCase().replace(/\s+/g,"").replace(/[()\[\]{}.,;:]/g,"").replace(/\u2212/g,"-"); }
+
+const learnData = [
+  { title:"Chapter 1: Logic and Proofs", color:"#1a237e", sections:[
+    ["Propositions and Connectives", `
+      <div class="concept"><h4>Proposition</h4><p>A declarative sentence with exactly one truth value. Commands, questions, and open sentences with free variables are not propositions until the variables are fixed or quantified.</p></div>
+      <div class="concept"><h4>Core truth behavior</h4><table class="mini-table"><tr><th>p</th><th>q</th><th>not p</th><th>p and q</th><th>p or q</th><th>p xor q</th><th>p -> q</th><th>p <-> q</th></tr><tr><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td></tr><tr><td>T</td><td>F</td><td>F</td><td>F</td><td>T</td><td>T</td><td>F</td><td>F</td></tr><tr><td>F</td><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td><td>T</td><td>F</td></tr><tr><td>F</td><td>F</td><td>T</td><td>F</td><td>F</td><td>F</td><td>T</td><td>T</td></tr></table><p>A truth table with n variables has 2^n rows. Conditional p -> q is false only when p is true and q is false.</p></div>
+      <div class="concept"><h4>Conditional language</h4><p>p -> q can be read as if p then q, p implies q, p only if q, q whenever p, q is necessary for p, and p is sufficient for q.</p><div class="formula">converse: q -> p | inverse: not p -> not q | contrapositive: not q -> not p</div></div>`],
+    ["Equivalences and Normal Rewrites", `
+      <div class="concept"><h4>Must-know laws</h4><div class="formula">p -> q == not p or q</div><div class="formula">p -> q == not q -> not p</div><div class="formula">not(p and q) == not p or not q | not(p or q) == not p and not q</div><div class="formula">p xor q == (p or q) and not(p and q) == (p and not q) or (not p and q)</div></div>
+      <div class="concept"><h4>Other laws</h4><p>Identity, domination, idempotent, double negation, commutative, associative, distributive, absorption, and negation laws let you simplify formulas without building the full truth table.</p></div>`],
+    ["Quantifiers", `
+      <div class="concept"><h4>Universal and existential</h4><p>For all x P(x) is true only when P(x) holds for every object in the domain. There exists x P(x) is true when at least one object works. Always identify the domain first.</p></div>
+      <div class="concept"><h4>Negating quantifiers</h4><div class="formula">not forall x P(x) == exists x not P(x)</div><div class="formula">not exists x P(x) == forall x not P(x)</div><div class="formula">not forall x exists y P(x,y) == exists x forall y not P(x,y)</div><p>Switch every quantifier and push the negation into the predicate.</p></div>`],
+    ["Inference and Proofs", `
+      <div class="concept"><h4>Rules of inference</h4><table class="mini-table"><tr><th>Rule</th><th>Pattern</th></tr><tr><td>Modus ponens</td><td>p, p -> q, therefore q</td></tr><tr><td>Modus tollens</td><td>not q, p -> q, therefore not p</td></tr><tr><td>Hypothetical syllogism</td><td>p -> q, q -> r, therefore p -> r</td></tr><tr><td>Disjunctive syllogism</td><td>p or q, not p, therefore q</td></tr><tr><td>Resolution</td><td>p or q, not p or r, therefore q or r</td></tr></table></div>
+      <div class="concept"><h4>Proof style choice</h4><p>Direct: assume p, show q. Contrapositive: assume not q, show not p. Contradiction: assume the negation of what you want, derive an impossibility.</p></div>`]
+  ]},
+  { title:"Chapter 2: Basic Structures", color:"#1b5e20", sections:[
+    ["Sets and Set Laws", `<div class="concept"><h4>Set operations</h4><div class="formula">A union B = {x | x in A or x in B}</div><div class="formula">A intersect B = {x | x in A and x in B}</div><div class="formula">A - B = {x | x in A and x notin B}</div><p>Power set P(S) contains all subsets of S, so |P(S)| = 2^|S|.</p></div><div class="concept"><h4>Useful identities</h4><p>Set laws mirror logic laws: union behaves like OR, intersection behaves like AND, complement behaves like NOT. De Morgan: complement of A union B is complement A intersect complement B.</p></div>`],
+    ["Functions", `<div class="concept"><h4>Definitions</h4><p>A function f: A -> B assigns each input in A exactly one output in B. Domain is A; codomain is B; range is what actually gets hit.</p></div><div class="concept"><h4>Classifying functions</h4><ul><li>Injective/one-to-one: f(a)=f(b) implies a=b.</li><li>Surjective/onto: every element of the codomain is hit.</li><li>Bijective: both. Exactly the functions with inverses.</li></ul><div class="formula">(f o g)(x) = f(g(x)); apply g first.</div></div>`],
+    ["Sequences and Summations", `<div class="concept"><h4>Sequences and recurrence</h4><p>A sequence is a function from integers to values. A recurrence relation defines terms from earlier terms and must include enough initial conditions.</p></div><div class="concept"><h4>Summation formulas</h4><div class="formula">sum_{i=1}^n i = n(n+1)/2</div><div class="formula">sum_{i=1}^n i^2 = n(n+1)(2n+1)/6</div><div class="formula">sum_{i=0}^n r^i = (r^(n+1)-1)/(r-1), r != 1</div></div>`]
+  ]},
+  { title:"Chapter 3: Algorithms", color:"#4a148c", sections:[
+    ["Algorithm Basics", `<div class="concept"><h4>Properties</h4><p>An algorithm is a finite, precise instruction list. Slides emphasize input, output, definiteness, correctness, finiteness, effectiveness, and generality.</p></div><div class="concept"><h4>Common examples</h4><p>Linear search checks items one by one: O(n). Binary search requires sorted input and halves the search interval: O(log n). Insertion sort builds a sorted prefix and is O(n^2) in the usual worst case.</p></div>`],
+    ["Big-O and Growth", `<div class="concept"><h4>Definition</h4><div class="formula">f(x) is O(g(x)) if there are C,k > 0 so |f(x)| <= C|g(x)| for all x > k.</div><p>C and k are witnesses. One valid pair proves the claim.</p></div><div class="concept"><h4>Growth ranking</h4><div class="formula">1 < log n < n < n log n < n^2 < n^3 < 2^n < n!</div><p>Highest-degree term dominates polynomial Big-O.</p></div>`],
+    ["Complexity from Loops", `<div class="concept"><h4>Loop counting</h4><ul><li>One loop running n times: O(n).</li><li>Nested full loops n by n: O(n^2).</li><li>Nested triangular loops: sum 1..n = O(n^2).</li><li>Triple nested loops n by n by n: O(n^3).</li><li>Repeated doubling/halving: O(log n).</li></ul></div><div class="concept"><h4>Exam method</h4><p>Write the count as a summation when possible, simplify it, then keep the dominant term.</p></div>`]
+  ]},
+  { title:"Chapter 4: Number Theory", color:"#bf360c", sections:[
+    ["Integer Representations", `<div class="concept"><h4>Base-b expansion</h4><div class="formula">n = a_k b^k + a_{k-1} b^{k-1} + ... + a_1 b + a_0</div><p>Decimal to base b: divide by b repeatedly and read remainders bottom-up. Binary to hex: group binary digits in blocks of four.</p></div><div class="concept"><h4>Hex reminders</h4><p>A=10, B=11, C=12, D=13, E=14, F=15. Each hex digit corresponds to exactly four binary bits.</p></div>`],
+    ["Congruences", `<div class="concept"><h4>Modulo</h4><div class="formula">a congruent b (mod m) iff m divides (a-b)</div><p>a mod m is the nonnegative remainder. For negatives, add or subtract multiples of m until the result is in 0,...,m-1.</p></div><div class="concept"><h4>Properties</h4><p>If a == b (mod m) and c == d (mod m), then a+c == b+d and ac == bd (mod m).</p></div>`],
+    ["GCD and Modular Inverses", `<div class="concept"><h4>Euclidean algorithm</h4><div class="formula">gcd(a,b) = gcd(b, a mod b)</div><p>Repeat until the remainder is 0; the last nonzero remainder is the gcd.</p></div><div class="concept"><h4>Inverse</h4><p>An inverse of a modulo m solves ax == 1 (mod m). It exists exactly when gcd(a,m)=1. Use trial, tables, or extended Euclidean work.</p></div>`]
+  ]},
+  { title:"Chapter 5: Induction and Recursion", color:"#006064", sections:[
+    ["Induction Framework", `<div class="concept"><h4>Standard induction</h4><p>To prove P(n) for all n >= n0: prove the basis P(n0), assume P(k) for arbitrary k >= n0, then prove P(k+1). The exam may ask for the framework/objectives rather than a full proof.</p><div class="formula">P(n0) and forall k>=n0 (P(k)->P(k+1)) imply forall n>=n0 P(n)</div></div><div class="concept"><h4>Common mistakes</h4><p>Do not assume P(k+1). Do not skip the basis. Make sure the inductive step uses the hypothesis.</p></div>`],
+    ["Recursion", `<div class="concept"><h4>Recursive definitions</h4><p>A valid recursive definition needs base cases and recursive calls that move toward those base cases. Missing parity base cases can break definitions such as f(n)=2f(n-2).</p></div><div class="concept"><h4>Recursive algorithms</h4><p>Translate a recurrence into code by making previous terms recursive calls. Termination is part of correctness.</p><div class="formula">gcd(a,b): if a=0 return b; else return gcd(b mod a, a)</div></div>`]
+  ]},
+  { title:"Chapter 6: Basic Counting", color:"#795548", sections:[
+    ["Counting Rules", `<div class="concept"><h4>Core rules</h4><ul><li>Product rule: sequential choices multiply.</li><li>Sum rule: mutually exclusive alternatives add.</li><li>Subtraction/inclusion-exclusion: |A union B| = |A| + |B| - |A intersect B|.</li><li>Division rule: if every object is counted d times, divide by d.</li></ul></div><div class="concept"><h4>Bit strings and passwords</h4><p>Length n bit strings: 2^n. Exactly r ones: C(n,r). At least one property often means total minus none.</p></div>`],
+    ["Permutations and Combinations", `<div class="concept"><h4>Permutations</h4><p>Use when order matters.</p><div class="formula">P(n,r)=n!/(n-r)!</div></div><div class="concept"><h4>Combinations</h4><p>Use when order does not matter.</p><div class="formula">C(n,r)=n!/(r!(n-r)!), C(n,r)=C(n,n-r)</div><p>P(n,r)=C(n,r)r!.</p></div>`]
+  ]}
+];
+
+function initLearn() {
+  document.getElementById("chapter-selector").innerHTML = learnData.map((ch,i) => `<button onclick="setLearnChapter(${i})" class="${i===0?'active':''}">Ch ${i+1}</button>`).join("");
+  renderLearn(0);
+}
+function setLearnChapter(i) {
+  document.querySelectorAll("#chapter-selector button").forEach((b,j) => b.classList.toggle("active", i===j));
+  renderLearn(i);
+}
+function renderLearn(i) {
+  const ch = learnData[i];
+  document.getElementById("learn-content").innerHTML = `<div class="section-title" style="font-size:1.1rem;color:${ch.color}">${ch.title}</div>` + ch.sections.map((s,idx) => `
+    <div class="learn-card">
+      <div class="learn-head" style="background:${ch.color}" onclick="this.nextElementSibling.classList.toggle('open')">${s[0]}<span>open</span></div>
+      <div class="learn-body ${idx===0?'open':''}">${s[1]}</div>
+    </div>`).join("");
+}
+
+const questions = [
+  {ch:0,type:"mc",q:"Which sentence is a proposition?",opts:["What time is the exam?","Turn in the cheat sheet.","7+5=13","x+2=9"],ans:2,exp:"A proposition is declarative and has a definite truth value. 7+5=13 is false, but it is still a proposition."},
+  {ch:0,type:"mc",q:"When is p -> q false?",opts:["p true, q true","p true, q false","p false, q true","p false, q false"],ans:1,exp:"A conditional is false only when the hypothesis is true and the conclusion is false."},
+  {ch:0,type:"text",q:"Give the contrapositive of: If n is divisible by 6, then n is divisible by 3.",answers:["if n is not divisible by 3 then n is not divisible by 6","not divisible by 3 then not divisible by 6"],exp:"Swap and negate both parts: If n is not divisible by 3, then n is not divisible by 6."},
+  {ch:0,type:"mc",q:"not(p or q) is equivalent to:",opts:["not p or not q","not p and not q","p and q","not(p and q)"],ans:1,exp:"De Morgan's law changes OR to AND and negates each part."},
+  {ch:0,type:"text",q:"Negate: For every student x, there exists a class y such that x passed y.",answers:["there exists a student x such that for every class y x did not pass y","exists x forall y not passed","there is a student who did not pass any class"],exp:"Switch quantifiers and negate the predicate: exists x such that for all y, x did not pass y."},
+  {ch:0,type:"mc",q:"Which rule matches: p -> q, q -> r, therefore p -> r?",opts:["Modus ponens","Modus tollens","Hypothetical syllogism","Resolution"],ans:2,exp:"Chaining implications is hypothetical syllogism."},
+  {ch:0,type:"text",q:"How many rows are needed for a truth table with variables p, q, r, s?",answers:["16"],exp:"There are 4 variables, so 2^4 = 16 rows."},
+  {ch:0,type:"mc",q:"p <-> q is true exactly when:",opts:["p is true","q is true","p and q have the same truth value","p and q have different truth values"],ans:2,exp:"Biconditional means both directions are true, which happens when the truth values match."},
+  {ch:0,type:"self",q:"Set up a proof by contraposition for: If n^2 is even, then n is even.",rubric:"Assume n is not even, so n is odd. Then n=2k+1, so n^2=(2k+1)^2=4k^2+4k+1=2(2k^2+2k)+1, which is odd. Therefore not q -> not p.",exp:"Contraposition proves: if n is odd, then n^2 is odd."},
+  {ch:1,type:"mc",q:"If |S|=5, what is |P(S)|?",opts:["5","10","25","32"],ans:3,exp:"A set with n elements has 2^n subsets. 2^5=32."},
+  {ch:1,type:"text",q:"Let A={1,2,3,4}, B={3,4,5}. What is A intersect B?",answers:["{3,4}","3,4"],exp:"The intersection contains elements common to both sets: {3,4}."},
+  {ch:1,type:"text",q:"Let A={1,2,3,4}, B={3,4,5}. What is A-B?",answers:["{1,2}","1,2"],exp:"A-B keeps elements in A that are not in B: {1,2}."},
+  {ch:1,type:"mc",q:"A function is invertible if and only if it is:",opts:["injective only","surjective only","bijective","constant"],ans:2,exp:"A function has an inverse exactly when it is one-to-one and onto."},
+  {ch:1,type:"text",q:"If f(x)=2x+1 and g(x)=x^2, compute (f o g)(3).",answers:["19"],exp:"Apply g first: g(3)=9. Then f(9)=2(9)+1=19."},
+  {ch:1,type:"text",q:"Compute sum_{i=1}^20 i.",answers:["210"],exp:"n(n+1)/2 = 20*21/2 = 210."},
+  {ch:1,type:"text",q:"Compute sum_{i=1}^5 i^2.",answers:["55"],exp:"1+4+9+16+25=55, or use n(n+1)(2n+1)/6."},
+  {ch:1,type:"self",q:"Explain how to tell whether f: A -> B is onto from a mapping diagram.",rubric:"Every element of B/codomain must have at least one arrow pointing to it. It is okay if multiple inputs hit the same output; onto only cares that none of B is missed.",exp:"Surjectivity is about the codomain being fully covered."},
+  {ch:2,type:"mc",q:"Which is the best Big-O for 6n^3 + 20n log n + 99?",opts:["O(log n)","O(n)","O(n^2)","O(n^3)"],ans:3,exp:"The n^3 term dominates."},
+  {ch:2,type:"text",q:"Give witnesses C and k to show 7x^2 is O(x^3). Use format C=..., k=...",answers:["C=1,k=7","c=1,k=7","C=7,k=1","c=7,k=1"],exp:"For x>7, 7x^2 <= x^3, so C=1,k=7 works. Also C=7,k=1 works for x>1."},
+  {ch:2,type:"mc",q:"Rank from slowest to fastest:",opts:["n, log n, n^2, 2^n","log n, n, n^2, 2^n","2^n, n^2, n, log n","n^2, n, log n, 2^n"],ans:1,exp:"log n grows slower than n, then n^2, then 2^n."},
+  {ch:2,type:"text",q:"A loop repeatedly divides n by 2 until n=1. What Big-O time is this?",answers:["O(log n)","log n","ologn"],exp:"Halving repeatedly takes logarithmically many steps."},
+  {ch:2,type:"text",q:"What is the Big-O of nested loops: for i=1..n, for j=1..i, do one operation?",answers:["O(n^2)","n^2","O(n2)"],exp:"Total operations are 1+2+...+n = n(n+1)/2 = O(n^2)."},
+  {ch:2,type:"mc",q:"Binary search requires the list to be:",opts:["unsorted","sorted","all positive","distinct only"],ans:1,exp:"Binary search works by comparing to the middle of a sorted list."},
+  {ch:2,type:"self",q:"Show why n^2 is not O(n).",rubric:"Assume n^2 <= Cn for all n>k. For n>0 divide by n to get n <= C. But n can be larger than any fixed C, contradiction.",exp:"The ratio n^2/n = n is unbounded."},
+  {ch:3,type:"text",q:"Convert decimal 231 to binary.",answers:["11100111","(11100111)2"],exp:"231=128+64+32+4+2+1, so the bits are 11100111."},
+  {ch:3,type:"text",q:"Convert binary 100000001110 to hexadecimal.",answers:["80E","0x80e","80e"],exp:"Group as 1000 0000 1110, which is 8 0 E."},
+  {ch:3,type:"text",q:"Compute -97 mod 11.",answers:["2"],exp:"-97 = 11(-9)+2, and the remainder must be nonnegative."},
+  {ch:3,type:"text",q:"Compute 14038 mod 1529.",answers:["277"],exp:"1529*9=13761, and 14038-13761=277."},
+  {ch:3,type:"text",q:"What is gcd(1529, 14038)?",answers:["1"],exp:"Euclidean chain: 14038=9*1529+277; 1529=5*277+144; 277=1*144+133; 144=1*133+11; 133=12*11+1; 11=11*1+0. The final nonzero remainder is 1."},
+  {ch:3,type:"text",q:"Compute gcd(84, 30).",answers:["6"],exp:"84=2*30+24, 30=1*24+6, 24=4*6+0, so gcd=6."},
+  {ch:3,type:"text",q:"Find the inverse of 3 modulo 7.",answers:["5"],exp:"3*5=15 == 1 mod 7."},
+  {ch:3,type:"mc",q:"An inverse of a modulo m exists iff:",opts:["a is even","m is prime","gcd(a,m)=1","a<m"],ans:2,exp:"Modular inverses exist exactly for relatively prime a and m."},
+  {ch:4,type:"self",q:"For P(n): 1+3+5+...+(2n+1)=(n+1)^2, state the basis step, inductive hypothesis, and inductive objective.",rubric:"Basis: prove P(0), so 1=(0+1)^2. Hypothesis: assume 1+3+...+(2k+1)=(k+1)^2. Objective: prove 1+3+...+(2k+1)+(2(k+1)+1)=((k+1)+1)^2.",exp:"That is the framework the exam is likely to ask for."},
+  {ch:4,type:"mc",q:"In induction, the inductive hypothesis is:",opts:["the statement is true for all n","assume P(k) for an arbitrary k in the range","assume P(k+1)","prove the basis"],ans:1,exp:"You assume P(k) and use it to prove P(k+1)."},
+  {ch:4,type:"text",q:"For P(n) with n>=1, what is the usual basis step?",answers:["P(1)","prove P(1)","n=1"],exp:"If the domain starts at 1, prove P(1) first."},
+  {ch:4,type:"mc",q:"Which recursive definition is invalid for all positive integers?",opts:["f(0)=1, f(n)=nf(n-1)","f(0)=0, f(1)=1, f(n)=f(n-1)+f(n-2)","f(0)=0, f(n)=2f(n-2) for n>=1","gcd(a,b): if a=0 return b else gcd(b mod a,a)"],ans:2,exp:"At n=1 it calls f(-1), which is undefined."},
+  {ch:4,type:"text",q:"Using gcd recursion gcd(a,b): if a=0 return b else gcd(b mod a,a), what is the next call after gcd(30,84)?",answers:["gcd(24,30)"],exp:"84 mod 30 = 24, so gcd(30,84) calls gcd(24,30)."},
+  {ch:4,type:"self",q:"Explain why every recursive algorithm needs a base case.",rubric:"The base case is the stopping condition. Without it, calls continue forever or reach undefined inputs. Recursive calls must also move toward the base case.",exp:"Base cases are what make recursion terminate."},
+  {ch:5,type:"text",q:"How many bit strings of length 7 are there?",answers:["128"],exp:"Each bit has 2 choices, so 2^7=128."},
+  {ch:5,type:"text",q:"How many bit strings of length 10 contain exactly four 1s?",answers:["210"],exp:"Choose the 4 positions for the ones: C(10,4)=210."},
+  {ch:5,type:"text",q:"How many 5-card poker hands are possible from a 52-card deck?",answers:["2598960","2,598,960"],exp:"Order does not matter: C(52,5)=2,598,960."},
+  {ch:5,type:"mc",q:"A saleswoman starts at a fixed city and visits the remaining 7 cities in some order. How many orders?",opts:["8!","7!","C(8,7)","2^7"],ans:1,exp:"The first city is fixed; arrange the remaining 7: 7!."},
+  {ch:5,type:"text",q:"How many positive integers less than 1000 are divisible by both 7 and 11?",answers:["12"],exp:"They must be divisible by lcm(7,11)=77. floor(999/77)=12."},
+  {ch:5,type:"mc",q:"Use combinations when:",opts:["order matters","order does not matter","items repeat forever","there is only one choice"],ans:1,exp:"Combinations count unordered selections."},
+  {ch:5,type:"text",q:"Compute P(8,3).",answers:["336"],exp:"P(8,3)=8*7*6=336."},
+  {ch:5,type:"text",q:"Compute C(8,3).",answers:["56"],exp:"C(8,3)=8*7*6/(3*2*1)=56."},
+  {ch:5,type:"self",q:"A password has 2 letters followed by 3 digits. Repetition is allowed. Explain the count.",rubric:"Use the product rule. There are 26 choices for each letter and 10 choices for each digit, so 26^2*10^3.",exp:"Sequential independent choices multiply."}
+];
+
+let testQuestions = [], currentQ = 0, answers = [], scored = [];
+function shuffle(a) { const x=[...a]; for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]];} return x; }
+function startTest() {
+  const filter = document.getElementById("chapter-filter").value;
+  const size = document.getElementById("test-size").value;
+  let bank = filter === "all" ? [...questions] : questions.filter(q => q.ch === Number(filter));
+  bank = shuffle(bank);
+  const n = size === "all" ? bank.length : Math.min(Number(size), bank.length);
+  testQuestions = bank.slice(0,n);
+  currentQ = 0; answers = Array(n).fill(null); scored = Array(n).fill(null);
+  document.getElementById("test-setup").style.display = "none";
+  document.getElementById("test-area").style.display = "block";
+  renderQuestion();
+}
+function renderQuestion() {
+  if (currentQ >= testQuestions.length) return showScore();
+  const q = testQuestions[currentQ], pct = Math.round(currentQ/testQuestions.length*100);
+  let input = "";
+  if (q.type === "mc") input = `<div class="options">${q.opts.map((o,i)=>`<button class="option-btn" onclick="selectMC(${i})">${String.fromCharCode(65+i)}. ${esc(o)}</button>`).join("")}</div>`;
+  if (q.type === "text") input = `<textarea class="answer-box" id="text-answer" placeholder="Type your answer or expression here">${answers[currentQ] ? esc(answers[currentQ]) : ""}</textarea><div class="q-nav"><button class="primary" onclick="checkText()">Check Answer</button></div>`;
+  if (q.type === "self") input = `<textarea class="answer-box" id="text-answer" placeholder="Write your setup/work here, then reveal the rubric">${answers[currentQ] ? esc(answers[currentQ]) : ""}</textarea><div class="q-nav"><button class="primary" onclick="revealRubric()">Reveal Rubric</button></div>`;
+  document.getElementById("test-area").innerHTML = `
+    <div class="progress-label">Question ${currentQ+1} of ${testQuestions.length}</div>
+    <div class="progress-outer"><div class="progress-inner" style="width:${pct}%"></div></div>
+    <div class="question-card">
+      <div class="q-meta">${chNames[q.ch]} | ${q.type === "mc" ? "multiple choice" : q.type === "text" ? "typed answer" : "free response"}</div>
+      <div class="q-text">${esc(q.q)}</div>
+      ${input}
+      <div id="feedback"></div>
+      <div class="q-nav" id="move-nav" style="display:${scored[currentQ]===null?'none':'flex'}">${navButtons()}</div>
+    </div>`;
+  if (scored[currentQ] !== null) showStoredFeedback();
+}
+function navButtons() {
+  return `${currentQ>0?'<button onclick="prevQ()">Previous</button>':''}${currentQ<testQuestions.length-1?'<button class="primary" onclick="nextQ()">Next</button>':'<button class="primary" onclick="showScore()">See Results</button>'}`;
+}
+function selectMC(i) {
+  const q = testQuestions[currentQ];
+  answers[currentQ] = i;
+  scored[currentQ] = i === q.ans;
+  document.querySelectorAll(".option-btn").forEach((b,j)=>{ b.disabled=true; if(j===q.ans)b.classList.add("correct"); else if(j===i)b.classList.add("wrong"); });
+  feedback(scored[currentQ], q.exp);
+}
+function checkText() {
+  const q = testQuestions[currentQ], val = document.getElementById("text-answer").value.trim();
+  answers[currentQ] = val;
+  const ok = q.answers.some(a => norm(a) === norm(val));
+  scored[currentQ] = ok;
+  feedback(ok, q.exp + (ok ? "" : " Accepted answer(s): " + q.answers.join(" or ")));
+}
+function revealRubric() {
+  const q = testQuestions[currentQ];
+  answers[currentQ] = document.getElementById("text-answer").value.trim();
+  scored[currentQ] = true;
+  document.getElementById("feedback").innerHTML = `<div class="feedback good"><strong>Rubric:</strong> ${esc(q.rubric)}<br><strong>Model note:</strong> ${esc(q.exp)}</div><div class="mode-note">Self-grade this one: count it correct only if your answer contains the key pieces above.</div>`;
+  document.getElementById("move-nav").style.display = "flex";
+}
+function feedback(ok, msg) {
+  document.getElementById("feedback").innerHTML = `<div class="feedback ${ok?'good':'bad'}"><strong>${ok?'Correct':'Check this'}:</strong> ${esc(msg)}</div>`;
+  document.getElementById("move-nav").style.display = "flex";
+}
+function showStoredFeedback() {
+  const q = testQuestions[currentQ];
+  if (q.type === "mc") document.querySelectorAll(".option-btn").forEach((b,j)=>{ b.disabled=true; if(j===q.ans)b.classList.add("correct"); else if(j===answers[currentQ])b.classList.add("wrong"); });
+  if (q.type === "self") revealRubric(); else feedback(scored[currentQ], q.exp);
+}
+function nextQ(){ currentQ++; renderQuestion(); }
+function prevQ(){ currentQ--; renderQuestion(); }
+function showScore() {
+  const total = testQuestions.length, correct = scored.filter(Boolean).length, pct = Math.round(correct/total*100);
+  const msg = pct >= 80 ? "That is A-range readiness. Review every miss once more." : pct >= 65 ? "Close. Your misses are the study guide now." : "Good diagnostic. Slow down and rebuild the weak chapters.";
+  document.getElementById("test-area").innerHTML = `<div class="score-card"><div class="score-big">${pct}%</div><p>${msg}</p><p>${correct} correct out of ${total}. Free-response items were self-graded after rubric reveal.</p><button class="primary" onclick="reviewAnswers()">Review Answers</button> <button onclick="restartTest()">New Test</button></div>`;
+}
+function restartTest() {
+  document.getElementById("test-area").style.display = "none";
+  document.getElementById("test-setup").style.display = "block";
+  document.getElementById("test-area").innerHTML = "";
+}
+function reviewAnswers() {
+  document.getElementById("test-area").innerHTML = `<div class="q-nav"><button class="primary" onclick="restartTest()">Back to setup</button></div>` + testQuestions.map((q,i)=>`
+    <div class="question-card" style="margin-top:12px;border-left:4px solid ${scored[i]?'var(--green)':'var(--red)'}">
+      <div class="q-meta">${chNames[q.ch]} | Q${i+1}</div>
+      <div class="q-text">${esc(q.q)}</div>
+      <p><strong>Your answer:</strong> ${esc(answers[i] ?? "blank")}</p>
+      <div class="feedback ${scored[i]?'good':'bad'}">${esc(q.type==="self" ? q.rubric : q.exp)}</div>
+    </div>`).join("");
+}
+
+function buildCheatSheet() {
+  document.getElementById("cheat-sheet").innerHTML = `
+  <div class="cs-page">
+    <div class="cs-title">DISCRETE STRUCTURES FINAL CHEAT SHEET - FRONT: CHAPTER 1 LOGIC | CHAPTER 2 STRUCTURES | CHAPTER 3 ALGORITHMS</div>
+    <div class="cs-flow">
+      <div class="cs-block"><h3>Final Review Scope</h3><p class="cs-note">Final Review PDF focus: short-answer style like practices/assignments. Comprehensive final. Use the cheat sheet for definitions, symbols, formulas, proof setup, and worked patterns.</p><p>Answer rhythm: identify topic → write rule/formula → show key work → final answer. Calculator allowed; scratch paper allowed.</p></div>
+
+      <div class="cs-block"><h3>Chapter 1: Truth Tables for Each Operator</h3><p>Logical Operators: <span class="cs-formula">¬p</span>: NOT | <span class="cs-formula">p ∧ q</span>: AND | <span class="cs-formula">p ∨ q</span>: OR (inclusive) | <span class="cs-formula">p ⊕ q</span>: XOR (exclusive or) | <span class="cs-formula">p → q</span>: If p then q | <span class="cs-formula">p ↔ q</span>: iff.</p><p>Precedence: <span class="cs-formula">¬ | ∧ | ∨ | → | ↔</span>. Truth table rule: n variables → <span class="cs-formula">2ⁿ rows</span>. Tautology = always true; Contradiction = always false; Contingency = sometimes true.</p><table class="cs-table"><tr><th>p</th><th>q</th><th>¬p</th><th>p∧q</th><th>p∨q</th><th>p⊕q</th><th>p→q</th><th>p↔q</th></tr><tr><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td></tr><tr><td>T</td><td>F</td><td>F</td><td>F</td><td>T</td><td>T</td><td>F</td><td>F</td></tr><tr><td>F</td><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td><td>T</td><td>F</td></tr><tr><td>F</td><td>F</td><td>T</td><td>F</td><td>F</td><td>F</td><td>T</td><td>T</td></tr></table><p>True cases with two variables: AND = 1, OR = 3, XOR = 2, conditional = 3, biconditional = 2. Conditional is false only when hypothesis is T and conclusion is F.</p></div>
+
+      <div class="cs-block"><h3>Implication / Conditional Wording</h3><p><span class="cs-formula">p → q</span> reads: if p then q; p implies q; p only if q; q whenever p; p is sufficient for q; q is necessary for p. Vacuous truth: when p is false, <span class="cs-formula">p → q</span> is true.</p><p>Converse: <span class="cs-formula">q → p</span>. Inverse: <span class="cs-formula">¬p → ¬q</span>. Contrapositive: <span class="cs-formula">¬q → ¬p</span>. Only the contrapositive is logically equivalent to the original.</p><p>Two equivalence relations for implication: <span class="cs-formula">p → q ≡ ¬p ∨ q</span> and <span class="cs-formula">p → q ≡ ¬q → ¬p</span>.</p><p>Biconditional: <span class="cs-formula">p ↔ q ≡ (p → q) ∧ (q → p) ≡ (p ∧ q) ∨ (¬p ∧ ¬q)</span>. XOR: <span class="cs-formula">p ⊕ q ≡ (p ∨ q) ∧ ¬(p ∧ q)</span>.</p></div>
+
+      <div class="cs-block"><h3>Common Equivalence / Critical Laws</h3><table class="cs-table"><tr><th>Law</th><th>Equivalence</th></tr><tr><td>Identity</td><td>p ∧ T ≡ p; p ∨ F ≡ p</td></tr><tr><td>Domination</td><td>p ∨ T ≡ T; p ∧ F ≡ F</td></tr><tr><td>Idempotent</td><td>p ∨ p ≡ p; p ∧ p ≡ p</td></tr><tr><td>Double negation</td><td>¬(¬p) ≡ p</td></tr><tr><td>Negation</td><td>p ∨ ¬p ≡ T; p ∧ ¬p ≡ F</td></tr><tr><td>Commutative</td><td>p ∧ q ≡ q ∧ p; p ∨ q ≡ q ∨ p</td></tr><tr><td>Associative</td><td>(p∧q)∧r ≡ p∧(q∧r); (p∨q)∨r ≡ p∨(q∨r)</td></tr><tr><td>Distributive</td><td>p∧(q∨r) ≡ (p∧q)∨(p∧r); p∨(q∧r) ≡ (p∨q)∧(p∨r)</td></tr><tr><td>De Morgan</td><td>¬(p∧q) ≡ ¬p∨¬q; ¬(p∨q) ≡ ¬p∧¬q</td></tr><tr><td>Absorption</td><td>p∨(p∧q) ≡ p; p∧(p∨q) ≡ p</td></tr></table><p>To prove equivalence: make a truth table and show the final columns match, or transform one side using equivalence laws until it equals the other side.</p></div>
+
+      <div class="cs-block"><h3>Quantifiers</h3><p><span class="cs-formula">∀x P(x)</span>: for all x in the domain, P(x) is true. One counterexample makes it false. <span class="cs-formula">∃x P(x)</span>: there exists at least one x in the domain such that P(x) is true. One witness proves it true.</p><p>Negation of Quantifiers: flip quantifier + negate inside. <span class="cs-formula">¬(∀x P(x)) ≡ ∃x ¬P(x)</span> | <span class="cs-formula">¬(∃x P(x)) ≡ ∀x ¬P(x)</span>.</p><p>Nested negations: <span class="cs-formula">¬∀x∃y P(x,y) ≡ ∃x∀y ¬P(x,y)</span>. <span class="cs-formula">¬∃x∀y P(x,y) ≡ ∀x∃y ¬P(x,y)</span>.</p><p>Order Matters: <span class="cs-formula">∀x∃y</span> means each x may have its own y. <span class="cs-formula">∃y∀x</span> means one y works for every x. Same quantifiers commute; mixed quantifiers usually do not.</p><p>Unique existence: <span class="cs-formula">∃!x P(x)</span> means exactly one x. Full form: <span class="cs-formula">∃x(P(x) ∧ ∀y(P(y) → y=x))</span>.</p></div>
+
+      <div class="cs-block"><h3>Quantifier Translation Patterns</h3><p>All A are B: <span class="cs-formula">∀x(A(x) → B(x))</span>. Some A are B: <span class="cs-formula">∃x(A(x) ∧ B(x))</span>. No A are B: <span class="cs-formula">∀x(A(x) → ¬B(x))</span> or <span class="cs-formula">¬∃x(A(x) ∧ B(x))</span>. Some A are not B: <span class="cs-formula">∃x(A(x) ∧ ¬B(x))</span>.</p><p>If the English sentence says "only if," the condition after "only if" is necessary and goes on the right side of →. "p only if q" = <span class="cs-formula">p → q</span>.</p></div>
+
+      <div class="cs-block"><h3>Rules of Inference</h3><table class="cs-table"><tr><th>Rule</th><th>Valid Form</th></tr><tr><td>Modus Ponens</td><td>p, p→q ∴ q</td></tr><tr><td>Modus Tollens</td><td>¬q, p→q ∴ ¬p</td></tr><tr><td>Hypothetical Syllogism</td><td>p→q, q→r ∴ p→r</td></tr><tr><td>Disjunctive Syllogism</td><td>p∨q, ¬p ∴ q OR p∨q, ¬q ∴ p</td></tr><tr><td>Addition</td><td>p ∴ p∨q</td></tr><tr><td>Simplification</td><td>p∧q ∴ p</td></tr><tr><td>Conjunction</td><td>p, q ∴ p∧q</td></tr><tr><td>Resolution</td><td>p∨q, ¬p∨r ∴ q∨r</td></tr></table><p>Quantifier rules: Universal Instantiation (UI) from ∀xP(x) infer P(c). Universal Generalization (UG) prove P(c) for arbitrary c, infer ∀xP(x). Existential Instantiation (EI) from ∃xP(x) use a new witness c. Existential Generalization (EG) from P(c), infer ∃xP(x).</p><p>Fallacies (WRONG): Affirming Consequent <span class="cs-formula">p→q, q ∴ p</span>. Denying Hypothesis <span class="cs-formula">p→q, ¬p ∴ ¬q</span>.</p></div>
+
+      <div class="cs-block"><h3>Proof Methods / Templates</h3><p>Direct proof of p→q: assume p, derive q. Proof by contraposition: assume ¬q, derive ¬p. Proof by contradiction: assume the negation of what you want, derive r∧¬r. Counterexample disproves a universal statement.</p><p>Even integer: n=2k. Odd integer: n=2k+1. Rational number: a/b where a,b∈ℤ and b≠0. Divides: d|n means n=dk for some k∈ℤ.</p></div>
+
+      <div class="cs-block"><h3>Chapter 2: Sets</h3><p>Set = unordered collection of distinct objects. Notation: <span class="cs-formula">x ∈ A</span> means x is an element of A. <span class="cs-formula">A ⊆ B</span> means every element of A is also an element of B. <span class="cs-formula">A ⊂ B</span> means proper subset: A⊆B and A≠B. <span class="cs-formula">|A|</span> = cardinality. <span class="cs-formula">∅</span> = empty set; <span class="cs-formula">∅ ⊆ A</span>.</p><p>Common Sets: <span class="cs-formula">ℕ={0,1,2,...}</span>, <span class="cs-formula">ℤ</span> integers, <span class="cs-formula">ℚ</span> rationals, <span class="cs-formula">ℝ</span> reals.</p><p>Power set: <span class="cs-formula">P(S)</span> = set of all subsets of S; <span class="cs-formula">|P(S)|=2^|S|</span>.</p></div>
+
+      <div class="cs-block"><h3>Set Operations / Link to Logic</h3><p>Union: <span class="cs-formula">A ∪ B = {x | x∈A ∨ x∈B}</span>. Intersection: <span class="cs-formula">A ∩ B = {x | x∈A ∧ x∈B}</span>. Difference: <span class="cs-formula">A − B = {x | x∈A ∧ x∉B}</span>. Complement: <span class="cs-formula">Ā = {x∈U | x∉A}</span>.</p><p>Cartesian Product: <span class="cs-formula">A × B = {(a,b) | a∈A ∧ b∈B}</span>; <span class="cs-formula">|A×B|=|A||B|</span>. Order matters: usually A×B≠B×A.</p><p>Logic link: OR ↔ union, AND ↔ intersection, NOT ↔ complement, implication ↔ subset. Set De Morgan: <span class="cs-formula">(A∪B)̄ = Ā∩B̄</span>, <span class="cs-formula">(A∩B)̄ = Ā∪B̄</span>.</p><p>Set identities: A∪∅=A; A∩U=A; A∪U=U; A∩∅=∅; A∪A=A; A∩A=A; A∪Ā=U; A∩Ā=∅; A−B=A∩B̄.</p></div>
+
+      <div class="cs-block"><h3>Functions</h3><p><span class="cs-formula">f: A → B</span>. Domain = A. Codomain = B. Range ⊆ B = actual outputs. A function assigns each input exactly one output.</p><p>One-to-One (Injective): <span class="cs-formula">f(a)=f(b) → a=b</span>; no two different inputs have the same output. Onto (Surjective): Range = Codomain; every element in B must be hit. Invertible iff one-to-one and onto (bijective).</p><p>Composition: <span class="cs-formula">(f∘g)(x)=f(g(x))</span>. Order matters; apply g first. If f:A→B and g:B→C, then <span class="cs-formula">g∘f:A→C</span>. Inverse check: <span class="cs-formula">f⁻¹(f(x))=x</span> and <span class="cs-formula">f(f⁻¹(y))=y</span>.</p><p>Finite set shortcuts: if |A|>|B|, f:A→B cannot be one-to-one. If |A|&lt;|B|, f cannot be onto. If |A|=|B|, one-to-one iff onto.</p></div>
+
+      <div class="cs-block"><h3>Sequences / Recurrence Relations</h3><p>Sequence = function from a subset of integers to a set S; <span class="cs-formula">aₙ</span> = nth term. Recurrence relation defines <span class="cs-formula">aₙ</span> from previous terms; need initial value(s).</p><p>Arithmetic progression: constant change c → <span class="cs-formula">aₙ=aₙ₋₁+c</span>, closed form <span class="cs-formula">aₙ=a₀+nc</span>. Geometric progression: ×r → <span class="cs-formula">aₙ=r·aₙ₋₁</span>, closed form <span class="cs-formula">aₙ=a₀rⁿ</span>. Factorial recurrence: <span class="cs-formula">a₀=1, aₙ=n·aₙ₋₁</span>. Fibonacci: <span class="cs-formula">F₀=0,F₁=1,Fₙ=Fₙ₋₁+Fₙ₋₂</span>.</p><p>Build terms: start from initial value(s) and compute forward. Recursive algorithms: initial terms become base cases.</p></div>
+
+      <div class="cs-block"><h3>Summation Formulas</h3><p><span class="cs-formula">∑ᵢ₌₁ⁿ i = n(n+1)/2</span>. <span class="cs-formula">∑ᵢ₌₁ⁿ i² = n(n+1)(2n+1)/6</span>. <span class="cs-formula">∑ᵢ₌₁ⁿ i³ = [n(n+1)/2]²</span>.</p><p>Geometric sum: <span class="cs-formula">∑ᵢ₌₀ⁿ rⁱ = (rⁿ⁺¹−1)/(r−1), r≠1</span>. Constant c from i=m to n: <span class="cs-formula">c(n−m+1)</span>. Linearity: <span class="cs-formula">∑(caᵢ+dbᵢ)=c∑aᵢ+d∑bᵢ</span>.</p><p>Algorithm link: triangular nested loops use <span class="cs-formula">1+2+...+n=n(n+1)/2=O(n²)</span>.</p></div>
+
+      <div class="cs-block"><h3>Chapter 3: Algorithms</h3><p>Algorithm = finite sequence of precise instructions for solving a problem. Properties from slides: input, output, definiteness, correctness, finiteness, effectiveness, generality.</p><p>Common algorithms: Linear search scans list → O(n). Binary search uses sorted list and halves search space → O(log n). Insertion sort inserts next element into sorted prefix → worst O(n²), best O(n).</p></div>
+
+      <div class="cs-block"><h3>Big-O Definition / How to Find It</h3><p>Definition: <span class="cs-formula">f(x) is O(g(x)) iff ∃C,k>0 such that |f(x)| ≤ C|g(x)| whenever x>k</span>. C and k are witnesses.</p><p>How to Find It: keep fastest growing term; drop constants; drop lower-order terms. Example: <span class="cs-formula">f(n)=3n²+5n+2 → O(n²)</span>. Best-fit Big-O: choose the smallest common class that works; <span class="cs-formula">log n+n → O(n)</span>.</p><p>Witness example: <span class="cs-formula">5n²+3n+8 ≤ 16n²</span> for n≥1, so C=16, k=1 proves O(n²).</p></div>
+
+      <div class="cs-block"><h3>Growth Comparison / Complexity</h3><p>VERY IMPORTANT: <span class="cs-formula">1 &lt; log n &lt; n &lt; n log n &lt; n² &lt; n³ &lt; 2ⁿ &lt; n!</span>. Factorial beats exponential; exponential beats polynomial; polynomial beats logarithm.</p><p>Exponent rules: <span class="cs-formula">aᵐ·aⁿ=aᵐ⁺ⁿ</span>, <span class="cs-formula">(aᵐ)ⁿ=aᵐⁿ</span>. Log rules: <span class="cs-formula">log(xy)=log x+log y</span>, <span class="cs-formula">log(xᵏ)=k log x</span>. Log base changes by a constant, so base does not matter for Big-O.</p><table class="cs-table"><tr><th>Pattern</th><th>Complexity</th></tr><tr><td>constant formula / array access</td><td>O(1)</td></tr><tr><td>divide in half repeatedly</td><td>O(log n)</td></tr><tr><td>single loop</td><td>O(n)</td></tr><tr><td>loop + binary search</td><td>O(n log n)</td></tr><tr><td>two nested n-loops</td><td>O(n²)</td></tr><tr><td>three nested n-loops</td><td>O(n³)</td></tr><tr><td>all bit strings / subsets</td><td>O(2ⁿ)</td></tr><tr><td>all permutations</td><td>O(n!)</td></tr></table></div>
+
+      <div class="cs-block"><h3>Loop Counting / Predicting Complexity</h3><p>Single loop i=1..n → n operations → O(n). Nested loops i=1..n, j=1..n → n² → O(n²). Nested i=1..n, j=1..i → <span class="cs-formula">∑ᵢ₌₁ⁿ i = O(n²)</span>. If i runs 1..n² and j runs 1..i → <span class="cs-formula">∑ᵢ₌₁ⁿ² i = O(n⁴)</span>. While n>1 and n=⌊n/2⌋ → O(log n).</p><p>To give an algorithm for a complexity: O(log n) use repeated halving; O(n) use one loop; O(n²) use nested loops; O(2ⁿ) enumerate all subsets/bit strings; O(n!) enumerate permutations.</p></div>
+    </div>
+  </div>
+
+  <div class="cs-page">
+    <div class="cs-title">DISCRETE STRUCTURES FINAL CHEAT SHEET - BACK: CHAPTER 4 NUMBER THEORY | CHAPTER 5 INDUCTION/RECURSION | CHAPTER 6 COUNTING</div>
+    <div class="cs-flow">
+      <div class="cs-block"><h3>Chapter 4: Integer Representation</h3><p>Base-b expansion: <span class="cs-formula">n=(aₖaₖ₋₁...a₁a₀)ᵦ = aₖbᵏ+aₖ₋₁bᵏ⁻¹+...+a₁b+a₀</span>, where <span class="cs-formula">0≤aᵢ&lt;b</span>.</p><p>Base → decimal: multiply each digit by the proper power of b and add. Decimal → base b: divide by b repeatedly, keep remainders, read remainders bottom-up.</p><p>Binary powers: 2⁰=1, 2¹=2, 2²=4, 2³=8, 2⁴=16, 2⁵=32, 2⁶=64, 2⁷=128, 2⁸=256, 2⁹=512, 2¹⁰=1024.</p><table class="cs-table"><tr><th>Hex</th><th>Bin</th><th>Hex</th><th>Bin</th><th>Hex</th><th>Bin</th><th>Hex</th><th>Bin</th></tr><tr><td>0</td><td>0000</td><td>4</td><td>0100</td><td>8</td><td>1000</td><td>C</td><td>1100</td></tr><tr><td>1</td><td>0001</td><td>5</td><td>0101</td><td>9</td><td>1001</td><td>D</td><td>1101</td></tr><tr><td>2</td><td>0010</td><td>6</td><td>0110</td><td>A</td><td>1010</td><td>E</td><td>1110</td></tr><tr><td>3</td><td>0011</td><td>7</td><td>0111</td><td>B</td><td>1011</td><td>F</td><td>1111</td></tr></table><p>Binary ↔ hex: group bits in 4s from the right, pad left if needed. Example: 100000001110₂ = 1000 0000 1110 = 80E₁₆.</p></div>
+
+      <div class="cs-block"><h3>Division Algorithm / Congruence</h3><p>Division Algorithm: if a∈ℤ and d∈ℤ⁺, then there exist unique integers q,r with <span class="cs-formula">a=dq+r</span> and <span class="cs-formula">0≤r&lt;d</span>. q = quotient, r = remainder.</p><p>Modulo: <span class="cs-formula">a mod m</span> is the nonnegative remainder in {0,1,...,m−1}. Negative example: <span class="cs-formula">−97 mod 11 = 2</span> because −97=11(−9)+2.</p><p>Congruence: <span class="cs-formula">a ≡ b (mod m) ⇔ m | (a−b)</span>. Equivalent: a and b have the same remainder mod m; <span class="cs-formula">a=b+km</span> for some k∈ℤ.</p><p>If a≡b (mod m) and c≡d (mod m), then a+c≡b+d, a−c≡b−d, and ac≡bd (mod m). Reduce large numbers before arithmetic.</p></div>
+
+      <div class="cs-block"><h3>GCD / Euclidean Algorithm</h3><p>gcd(a,b) = greatest common divisor. Relatively prime means gcd(a,b)=1. Pairwise relatively prime means every pair has gcd 1.</p><p>Euclidean Algorithm: <span class="cs-formula">gcd(a,b)=gcd(b, a mod b)</span>. Repeat until remainder 0; last nonzero remainder is the gcd.</p><p>Example: gcd(84,30): 84=2·30+24; 30=1·24+6; 24=4·6+0, so gcd=6. Three numbers: <span class="cs-formula">gcd(a,b,c)=gcd(a,gcd(b,c))</span>.</p><p>Recursive gcd algorithm: if b=0 return a; else return gcd(b, a mod b). Call chain: gcd(84,30)→gcd(30,24)→gcd(24,6)→gcd(6,0)=6.</p></div>
+
+      <div class="cs-block"><h3>Modular Inverses / Linear Congruences</h3><p>Modular inverse of a modulo m solves <span class="cs-formula">ax ≡ 1 (mod m)</span>. It exists iff <span class="cs-formula">gcd(a,m)=1</span>. For small m, test x=1,...,m−1.</p><p>Linear congruence <span class="cs-formula">ax ≡ b (mod m)</span> is solvable iff <span class="cs-formula">gcd(a,m) | b</span>. If inverse a⁻¹ exists, multiply both sides by a⁻¹.</p><p>To represent all integers congruent to r mod m: <span class="cs-formula">r+mk, k∈ℤ</span>. To validate congruence: compute a−b and check divisibility by m, or compare remainders.</p><p>Useful identity: for positive a,b, <span class="cs-formula">gcd(a,b)·lcm(a,b)=ab</span>.</p></div>
+
+      <div class="cs-block"><h3>Chapter 5: Recursion</h3><p>Recursive definition has basis step(s) and recursive step(s). Recursive algorithm has base case(s) and recursive calls that move toward a base case. Initial conditions in a recurrence relation become base cases in the recursive algorithm.</p><p>Factorial: if n=0 return 1; else return n·fact(n−1). Fibonacci: if n=0 return 0; if n=1 return 1; else return F(n−1)+F(n−2). Power: if n=0 return 1; else return a·power(a,n−1). GCD: if b=0 return a; else return gcd(b,a mod b).</p><p>Valid recursive definition check: base cases cover the starting values; recursive calls are defined; arguments move toward base cases. Example invalid: f(0)=0, f(n)=2f(n−2) for n≥1 because f(1) calls f(−1).</p></div>
+
+      <div class="cs-block"><h3>Mathematical Induction Framework</h3><p>To prove P(n) for all n≥n₀: Basis Step: prove P(n₀). Inductive Hypothesis: assume P(k) is true for arbitrary k≥n₀. Target / Objective: write P(k+1). Inductive Step: use P(k) to prove P(k+1).</p><p>Principle: <span class="cs-formula">P(n₀) ∧ ∀k≥n₀(P(k)→P(k+1)) ⇒ ∀n≥n₀ P(n)</span>.</p><p>Final Review note: if asked only for basis, hypothesis, and target expression, do exactly that. Do not complete the whole proof unless asked.</p><p>Chain effect: basis starts the chain; step connects each statement to the next: P(n₀)→P(n₀+1)→P(n₀+2)→...</p></div>
+
+      <div class="cs-block"><h3>Induction Setup Examples</h3><p>Sum proof pattern: LHS(k+1)=LHS(k)+new term. Substitute the inductive hypothesis for LHS(k). Algebraically simplify to RHS(k+1).</p><p>Example formula: <span class="cs-formula">1+3+...+(2n+1)=(n+1)²</span>. Basis n=0: 1=1. Hypothesis: <span class="cs-formula">1+3+...+(2k+1)=(k+1)²</span>. Target: <span class="cs-formula">1+3+...+(2k+1)+(2(k+1)+1)=(k+2)²</span>.</p><p>Odd squares formula from slides: <span class="cs-formula">1²+3²+...+(2n+1)²=(n+1)(2n+1)(2n+3)/3</span>. Target for k+1: <span class="cs-formula">(k+2)(2k+3)(2k+5)/3</span>.</p></div>
+
+      <div class="cs-block"><h3>Strong Induction / Recurrence Links</h3><p>Strong induction: basis step(s), then assume P(n₀),P(n₀+1),...,P(k) to prove P(k+1). Use strong induction when the proof may need more than just the immediately previous case.</p><p>Recurrence → recursive algorithm: <span class="cs-formula">aₙ=aₙ₋₁+c</span> becomes base a₀, recursive rec(n−1)+c. <span class="cs-formula">aₙ=r·aₙ₋₁</span> becomes r·rec(n−1). <span class="cs-formula">aₙ=aₙ₋₁+aₙ₋₂</span> needs two base cases and returns rec(n−1)+rec(n−2).</p><p>Mistake checks: do not assume P(k+1); do not skip basis; k must be arbitrary; target replaces every n with k+1; if step proves P(k)→P(k+2), need enough bases or parity reasoning.</p></div>
+
+      <div class="cs-block"><h3>Chapter 6: Counting Rules</h3><p>Product Rule: if a task has step 1 with n₁ choices, step 2 with n₂ choices, ..., then total choices = <span class="cs-formula">n₁n₂...</span>. Sum Rule: if cases are mutually exclusive, add. Subtraction Rule: total minus bad cases. Division Rule: if every object is counted d times, divide by d.</p><p>Inclusion-Exclusion: <span class="cs-formula">|A∪B|=|A|+|B|−|A∩B|</span>. Three sets: add singles, subtract pairwise intersections, add triple intersection. Complement method: at least one = total − none.</p><p>Use combined rules when a problem has cases and steps. Add across cases; multiply within each case.</p></div>
+
+      <div class="cs-block"><h3>Permutations / Combinations</h3><p>Factorial: <span class="cs-formula">n!=n(n−1)...1</span>, and <span class="cs-formula">0!=1</span>. Permutation/order matters/no repetition: <span class="cs-formula">P(n,r)=n!/(n−r)!</span>. Combination/order does not matter/no repetition: <span class="cs-formula">C(n,r)=n!/[r!(n−r)!]</span>.</p><p>With repetition and order matters: <span class="cs-formula">nʳ</span>. With repetition and order does not matter: <span class="cs-formula">C(n+r−1,r)</span>. Relation: <span class="cs-formula">P(n,r)=C(n,r)r!</span>. Symmetry: <span class="cs-formula">C(n,r)=C(n,n−r)</span>.</p><table class="cs-table"><tr><th>n</th><th>n!</th><th>C(n,2)</th><th>C(n,3)</th><th>2ⁿ</th></tr><tr><td>5</td><td>120</td><td>10</td><td>10</td><td>32</td></tr><tr><td>6</td><td>720</td><td>15</td><td>20</td><td>64</td></tr><tr><td>7</td><td>5040</td><td>21</td><td>35</td><td>128</td></tr><tr><td>8</td><td>40320</td><td>28</td><td>56</td><td>256</td></tr><tr><td>10</td><td>3628800</td><td>45</td><td>120</td><td>1024</td></tr></table></div>
+
+      <div class="cs-block"><h3>Common Counting Patterns</h3><p>Bit strings length n: <span class="cs-formula">2ⁿ</span>. Exactly r ones: <span class="cs-formula">C(n,r)</span>. At least one 1: <span class="cs-formula">2ⁿ−1</span>. Subsets of an n-element set: <span class="cs-formula">2ⁿ</span>.</p><p>Functions from an m-element domain to an n-element codomain: <span class="cs-formula">nᵐ</span>. One-to-one functions: <span class="cs-formula">P(n,m)</span> if n≥m; none if n&lt;m.</p><p>Passwords: repetition allowed → multiply full choices each position. No repetition → choices decrease. If first digit cannot be 0, handle first position separately.</p><p>Poker hand = unordered: <span class="cs-formula">C(52,5)</span>. Fixed starting city with 7 remaining cities: <span class="cs-formula">7!</span>. Circular arrangements: divide by n rotations, so (n−1)! if all rotations considered the same.</p></div>
+
+      <div class="cs-block"><h3>Counting with Restrictions</h3><p>Exactly r positions with a property: choose positions first, then fill remaining positions. Example length n bit strings with exactly r ones: choose r of n positions → C(n,r).</p><p>At most r = sum cases 0 through r. At least r = total − cases below r, or sum r through n. Neither A nor B = total − |A∪B|. Divisible by A or B = floor((N)/A)+floor((N)/B)−floor((N)/lcm(A,B)).</p><p>Positive integers &lt;1000 divisible by both 7 and 11: lcm=77, so <span class="cs-formula">⌊999/77⌋=12</span>.</p></div>
+
+      <div class="cs-block"><h3>Binomial Coefficients</h3><p>Pascal identity: <span class="cs-formula">C(n+1,r)=C(n,r−1)+C(n,r)</span>. Binomial Theorem: <span class="cs-formula">(x+y)ⁿ=∑ᵣ₌₀ⁿ C(n,r)xⁿ⁻ʳyʳ</span>. Sum of row: <span class="cs-formula">∑ᵣ₌₀ⁿ C(n,r)=2ⁿ</span>.</p><p>Use binomial coefficients for choosing subsets, bit strings with fixed number of 1s, and coefficients in expansions.</p></div>
+
+      <div class="cs-block"><h3>Counting Decision Checklist</h3><p>1. Sequential choices? multiply. 2. Mutually exclusive cases? add. 3. Overlap? inclusion-exclusion. 4. Same result counted d times? divide. 5. Order matters? permutation or powers. 6. Order irrelevant? combination. 7. Repetition allowed? powers / combinations with repetition. 8. "At least" or "none"? complement. 9. Fixed positions/start? remove fixed choices first.</p></div>
+    </div>
+  </div>`;
+  return;
+}
+
+initLearn();
+buildCheatSheet();
+document.getElementById("q-count").textContent = questions.length;
+</script>
+</body>
+</html>
